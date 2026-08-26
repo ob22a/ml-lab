@@ -41,3 +41,8 @@ venv.bak/
 # VS Code / IDEs
 .vscode/
 .idea/
+
+# Testing Images
+test_image.png
+test_image.jpg
+test_image.jpeg
