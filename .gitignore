@@ -46,3 +46,6 @@ venv.bak/
 test_image.png
 test_image.jpg
 test_image.jpeg
+
+# Result artifacts
+results/

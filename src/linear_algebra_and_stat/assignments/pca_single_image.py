@@ -35,22 +35,15 @@ def perform_single_image_pca(X: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.
         eigenvectors: Sorted eigenvectors
         Z_full: Projected coordinates (full rank)
     """
-    n, d = X.shape
-    mu = np.mean(X, axis=0)
-    X_c = X - mu
+    from src.linear_algebra_and_stat.core.decomposition import CustomPCA
     
-    # Covariance Matrix (normalize by n for exact variance-eigenvalue equality matching MSE)
-    # Note: Using n (population covariance) instead of n-1 makes the math perfectly clean 
-    # for the sum of discarded eigenvalues = MSE proof without scalar correction.
-    cov_matrix = (X_c.T @ X_c) / n
+    # Use population covariance (ddof=0) to perfectly match theoretical MSE calculation
+    pca = CustomPCA(ddof=0).fit(X)
     
-    eigenvalues, eigenvectors = np.linalg.eigh(cov_matrix)
-    
-    idx = np.argsort(eigenvalues)[::-1]
-    eigenvalues = eigenvalues[idx]
-    eigenvectors = eigenvectors[:, idx]
-    
-    Z_full = X_c @ eigenvectors
+    mu = pca.mean_
+    eigenvalues = pca.explained_variance_
+    eigenvectors = pca.components_.T
+    Z_full = pca.transform(X)
     
     return mu, eigenvalues, eigenvectors, Z_full
 

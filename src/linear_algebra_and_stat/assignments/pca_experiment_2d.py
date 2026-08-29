@@ -28,7 +28,7 @@ def generate_synthetic_2d_data(n_samples: int = 200) -> np.ndarray:
 
 def custom_pca_2d(X: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
-    Performs PCA manually using the custom Matrix class for 2D data.
+    Performs PCA manually using CustomPCA for 2D data.
     Returns:
         mu: mean vector (1D np array)
         eigenvalues: sorted eigenvalues (1D np array)
@@ -38,37 +38,20 @@ def custom_pca_2d(X: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np
     """
     n, d = X.shape
     if d != 2:
-        raise ValueError("custom_pca_2d only works for 2D data due to Matrix class limits.")
+        raise ValueError("custom_pca_2d only works for 2D data.")
         
-    # 1. Compute Mean
-    mu = np.mean(X, axis=0)
+    from src.linear_algebra_and_stat.core.decomposition import CustomPCA
     
-    # 2. Center Data
-    X_c = X - mu
+    pca = CustomPCA(ddof=1).fit(X)
     
-    # 3. Covariance Matrix
-    cov_numpy = (X_c.T @ X_c) / (n - 1)
-    cov_matrix = Matrix(cov_numpy.tolist())
-    
-    # 4. Eigendecomposition using custom Matrix class
-    eigenvalues = cov_matrix.eigenvalues()
-    eigenvectors = cov_matrix.eigenvectors(eigenvalues)
-    
-    # Convert back to numpy for sorting and remaining steps
-    evals = np.array(eigenvalues)
-    evecs = np.array([v.elements for v in eigenvectors]).T
-    
-    # 5. Sort from largest to smallest
-    idx = np.argsort(evals)[::-1]
-    evals = evals[idx]
-    evecs = evecs[:, idx]
-    
-    # 6. Projection
-    Z = X_c @ evecs
+    mu = pca.mean_
+    evals = pca.explained_variance_
+    evecs = pca.components_.T
+    Z = pca.transform(X)
     
     # 7. Reconstruction (using only top 1 component for demonstration)
     W1 = evecs[:, :1]
-    Z1 = X_c @ W1
+    Z1 = Z[:, :1]
     X_hat = (Z1 @ W1.T) + mu
     
     return mu, evals, evecs, Z, X_hat

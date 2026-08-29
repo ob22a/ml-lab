@@ -10,29 +10,15 @@ def custom_pca_iris(X: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray, 
         Z: projected data (np array)
         explained_variance_ratio: explained variance ratio (1D np array)
     """
-    n, d = X.shape
+    from src.linear_algebra_and_stat.core.decomposition import CustomPCA
     
-    # Center data
-    mu = np.mean(X, axis=0)
-    X_c = X - mu
+    # Fit full PCA to get all eigenvalues and eigenvectors
+    pca_full = CustomPCA(ddof=1).fit(X)
     
-    # Covariance Matrix
-    cov_matrix = (X_c.T @ X_c) / (n - 1)
-    
-    # Eigendecomposition
-    eigenvalues, eigenvectors = np.linalg.eigh(cov_matrix)
-    
-    # Sort
-    idx = np.argsort(eigenvalues)[::-1]
-    eigenvalues = eigenvalues[idx]
-    eigenvectors = eigenvectors[:, idx]
-    
-    # Project to 2D
-    k = 2
-    W2 = eigenvectors[:, :k]
-    Z = X_c @ W2
-    
-    explained_variance_ratio = eigenvalues / np.sum(eigenvalues)
+    eigenvalues = pca_full.explained_variance_
+    eigenvectors = pca_full.components_.T
+    Z = pca_full.transform(X)[:, :2]
+    explained_variance_ratio = pca_full.explained_variance_ratio_
     
     return eigenvalues, eigenvectors, Z, explained_variance_ratio
 
